@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>RIT Hotel Hotel Yogyakarta | Hubungi Kami & FAQ</title>
+    <!-- Tailwind CSS with Forms plugin -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <!-- Google Fonts Poppins & Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link href="css/polish.css" rel="stylesheet">
+    <!-- React & ReactDOM CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <!-- Babel CDN for JSX processing in browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#000613",
+                        secondary: "#D4AF37",
+                        "secondary-dark": "#AA7C11",
+                        surface: "#F9FAFC",
+                        "on-surface-variant": "#64748B"
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-slate-800">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function App() {
+            const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+            const [faqActive, setFaqActive] = useState(null);
+            const [name, setName] = useState("");
+            const [email, setEmail] = useState("");
+            const [subject, setSubject] = useState("");
+            const [message, setMessage] = useState("");
+            const [submitted, setSubmitted] = useState(false);
+
+            const toggleFaq = (index) => {
+                setFaqActive(faqActive === index ? null : index);
+            };
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                setSubmitted(true);
+                setName("");
+                setEmail("");
+                setSubject("");
+                setMessage("");
+                setTimeout(() => setSubmitted(false), 5000);
+            };
+
+            return (
+                <div className="flex flex-col min-h-screen">
+                    <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 md:px-12 py-4 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm">
+                        <div className="flex items-center gap-4">
+                            <button className="lg:hidden text-primary" onClick={() => setMobileMenuOpen(true)}><span className="material-symbols-outlined text-2xl">menu</span></button>
+                            <a className="text-xl md:text-2xl font-bold tracking-wider text-primary flex items-center gap-2 font-serif" href="index.html">
+                                <span className="text-secondary">RIT</span><span> Hotel</span>
+                            </a>
+                        </div>
+                        <nav className="hidden lg:flex items-center gap-8">
+                            <a className="font-medium text-sm text-on-surface-variant hover:text-secondary py-1" href="index.html">Beranda</a>
+                            <a className="font-medium text-sm text-on-surface-variant hover:text-secondary py-1" href="daftar_kamar.html">Kamar & Suite</a>
+                            <a className="font-medium text-sm text-on-surface-variant hover:text-secondary py-1" href="promo.html">Promo</a>
+                            <a className="font-medium text-sm text-on-surface-variant hover:text-secondary py-1" href="news.html">Kabar</a>
+                            <a className="font-medium text-sm text-on-surface-variant hover:text-secondary py-1" href="gallery.html">Galeri</a>
+                            <a className="font-semibold text-sm text-secondary border-b-2 border-secondary py-1" href="kontak.html">Hubungi Kami</a>
+                            <a className="font-medium text-sm text-on-surface-variant hover:text-secondary py-1 font-bold px-3 py-1 bg-amber-50 rounded-lg border border-amber-200" href="api_data.html">API Page (Axios)</a>
+                        </nav>
+                        <a href="booking.html" className="bg-primary text-white hover:bg-secondary hover:text-primary transition-all px-6 py-2.5 rounded-full text-sm font-bold shadow-md btn-premium">Pesan</a>
+                    </header>
+
+                    {mobileMenuOpen && (
+                        <div className="fixed inset-0 z-[60] flex">
+                            <div className="absolute inset-0 bg-black/40" onClick={() => setMobileMenuOpen(false)}></div>
+                            <aside className="relative w-72 bg-white h-screen p-6 shadow-2xl animate-slide-in">
+                                <button className="absolute top-4 right-4" onClick={() => setMobileMenuOpen(false)}><span className="material-symbols-outlined">close</span></button>
+                                <nav className="mt-12 flex flex-col gap-2 text-sm">
+                                    <a href="index.html" className="px-4 py-3 rounded-xl hover:bg-slate-50">Beranda</a>
+                                    <a href="gallery.html" className="px-4 py-3 rounded-xl hover:bg-slate-50">Galeri</a>
+                                    <a href="kontak.html" className="px-4 py-3 rounded-xl bg-secondary/10 text-secondary font-bold">Kontak</a>
+                                </nav>
+                            </aside>
+                        </div>
+                    )}
+
+                    <main className="flex-grow pt-24 md:pt-28 max-w-7xl mx-auto px-6 w-full pb-24 space-y-12">
+                        <div className="text-center space-y-3">
+                            <span className="text-secondary font-bold text-xs uppercase tracking-widest block">Layanan Hubungan Pelanggan</span>
+                            <h2 className="font-serif text-3xl md:text-5xl font-bold text-primary">Hubungi Layanan Kami</h2>
+                            <p className="text-xs md:text-sm text-slate-500 font-light max-w-lg mx-auto">
+                                Tim reservasi kami siap melayani seluruh pertanyaan dan kebutuhan khusus Anda selama menginap di Yogyakarta 24 jam sehari.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {[
+                                { icon: "location_on", title: "Alamat", text: "Jl. Malioboro No. 52, Yogyakarta 55213 — 5 menit ke Keraton" },
+                                { icon: "call", title: "Telepon", text: "(0274) 884201 · WhatsApp 0812-3456-7890" },
+                                { icon: "flight", title: "Bandara YIA", text: "Antar-jemput premium ± 45 menit dari hotel" }
+                            ].map((c, i) => (
+                                <div key={i} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm card-premium flex gap-4">
+                                    <span className="material-symbols-outlined text-secondary text-2xl">{c.icon}</span>
+                                    <div>
+                                        <h4 className="font-bold text-sm text-primary">{c.title}</h4>
+                                        <p className="text-xs text-slate-500 font-light mt-1 leading-relaxed">{c.text}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                            {/* Contact form grid item */}
+                            <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm space-y-6">
+                                <h3 className="font-bold text-sm uppercase tracking-wider text-primary border-b pb-4">Kirim Pesan Langsung</h3>
+                                
+                                {submitted && (
+                                    <div className="bg-emerald-50 text-emerald-800 p-4 border-l-4 border-emerald-500 rounded-xl text-xs font-bold uppercase tracking-wider">
+                                        Pesan Anda berhasil dikirim secara lokal! Tim concierge kami akan segera menghubungi Anda.
+                                    </div>
+                                )}
+
+                                <form onSubmit={handleSubmit} className="space-y-4 text-xs font-light">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="flex flex-col gap-1.5">
+                                            <label className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Nama Lengkap</label>
+                                            <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="bg-slate-50 border-slate-100 rounded-xl px-4 py-3 outline-none focus:ring-1 focus:ring-secondary focus:border-secondary font-semibold" placeholder="Contoh: Jane Doe" required />
+                                        </div>
+                                        <div className="flex flex-col gap-1.5">
+                                            <label className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Alamat Email</label>
+                                            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="bg-slate-50 border-slate-100 rounded-xl px-4 py-3 outline-none focus:ring-1 focus:ring-secondary focus:border-secondary font-semibold" placeholder="janedoe@example.com" required />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col gap-1.5">
+                                        <label className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Subjek Pesan</label>
+                                        <input type="text" value={subject} onChange={(e) => setSubject(e.target.value)} className="bg-slate-50 border-slate-100 rounded-xl px-4 py-3 outline-none focus:ring-1 focus:ring-secondary focus:border-secondary font-semibold" placeholder="Keperluan pemesanan khusus, dll." required />
+                                    </div>
+
+                                    <div className="flex flex-col gap-1.5">
+                                        <label className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Detail Isi Pesan Anda</label>
+                                        <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows="5" className="bg-slate-50 border-slate-100 rounded-xl px-4 py-3 outline-none focus:ring-1 focus:ring-secondary focus:border-secondary font-semibold" placeholder="Tuliskan seluruh pertanyaan Anda di sini..." required></textarea>
+                                    </div>
+
+                                    <button type="submit" className="w-full bg-primary hover:bg-secondary text-white hover:text-primary transition-all py-3.5 rounded-2xl font-bold uppercase tracking-wider shadow-md">
+                                        Kirim Pesan
+                                    </button>
+                                </form>
+                            </div>
+
+                            {/* FAQ Accordion container using state */}
+                            <div className="space-y-6 bg-slate-900 text-white p-8 rounded-3xl">
+                                <h3 className="font-bold text-sm uppercase tracking-wider text-secondary border-b border-slate-800 pb-4">Tanya Jawab Populer</h3>
+                                
+                                <div className="space-y-4">
+                                    {[
+                                        { q: "Kapan batas waktu Check-In dan Check-Out?", a: "Waktu check-in standar kami dimulai pukul 14:00 WIB, sedangkan batas waktu check-out adalah pukul 12:00 WIB siang." },
+                                        { q: "Apakah sarapan pagi sudah termasuk dalam tarif?", a: "Ya, sarapan prasmanan mewah di Restoran Vista Delicacy sudah gratis untuk 2 orang di setiap kamar." },
+                                        { q: "Apakah ada paket wisata ke Prambanan & Malioboro?", a: "Ya, concierge hotel menyediakan paket tur ke Candi Prambanan, Keraton Jogja, dan jalan-jalan Malioboro dengan guide lokal berbahasa Indonesia & Inggris." },
+                                        { q: "Bagaimana kebijakan pembatalan pemesanan?", a: "Pembatalan gratis dapat dilakukan maksimal 48 jam sebelum tanggal check-in." }
+                                    ].map((faq, idx) => (
+                                        <div key={idx} className="bg-slate-800/40 rounded-2xl border border-slate-800 overflow-hidden">
+                                            <button className="w-full flex justify-between items-center px-5 py-4 text-left font-bold text-xs text-white" onClick={() => toggleFaq(idx)}>
+                                                <span>{faq.q}</span>
+                                                <span className="material-symbols-outlined text-secondary transition-transform duration-300" style={{ transform: faqActive === idx ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                                                    keyboard_arrow_down
+                                                </span>
+                                            </button>
+                                            
+                                            {faqActive === idx && (
+                                                <div className="px-5 pb-5 text-[11px] font-light text-slate-300 leading-relaxed border-t border-slate-800 pt-3">
+                                                    {faq.a}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+
+                    <footer className="bg-primary text-white border-t border-slate-900 mt-24">
+                        <div className="border-t border-slate-900 py-6 text-center text-[10px] text-slate-500 font-light">
+                            &copy; 2026 RIT Hotel Hotel Yogyakarta. Seluruh Hak Cipta Dilindungi. Tugas UTS Pemrograman Web - Kelompok 4.
+                        </div>
+                    </footer>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

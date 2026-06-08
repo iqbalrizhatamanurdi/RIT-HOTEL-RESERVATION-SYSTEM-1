@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>RIT Hotel Hotel Yogyakarta | Reservasi Kamar & Stepper Form</title>
+    <!-- Tailwind CSS with Forms plugin -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <!-- Google Fonts Poppins & Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link href="css/polish.css" rel="stylesheet">
+    <!-- React & ReactDOM CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <!-- Babel CDN for JSX processing in browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#000613",
+                        secondary: "#D4AF37",
+                        "secondary-dark": "#AA7C11",
+                        surface: "#F9FAFC",
+                        "on-surface-variant": "#64748B"
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-slate-800">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const defaultRooms = [
+            { id: 1, name: "Superior King Garden", type: "Superior", price: 2150000 },
+            { id: 2, name: "Deluxe Malioboro View", type: "Deluxe", price: 3450000 },
+            { id: 3, name: "Presidential Sky Suite", type: "Suite", price: 8900000 },
+            { id: 4, name: "Executive Superior Room", type: "Superior", price: 2800000 },
+            { id: 5, name: "Deluxe Garden Terrace", type: "Deluxe", price: 4200000 },
+            { id: 6, name: "RIT Hotel Royal Suite", type: "Suite", price: 12500000 }
+        ];
+
+        function App() {
+            // State variables (React State component requirement)
+            const [step, setStep] = useState(1);
+            const [rooms, setRooms] = useState(defaultRooms);
+            const [selectedRoomId, setSelectedRoomId] = useState(1);
+            
+            // Stepper Form data state
+            const [guestName, setGuestName] = useState("");
+            const [guestEmail, setGuestEmail] = useState("");
+            const [checkIn, setCheckIn] = useState("");
+            const [checkOut, setCheckOut] = useState("");
+            const [bankName, setBankName] = useState("BCA");
+            const [paymentProofName, setPaymentProofName] = useState("");
+            const [paymentPreview, setPaymentPreview] = useState(null);
+            const [uploadDrag, setUploadDrag] = useState(false);
+
+            // Derived pricing state
+            const [nights, setNights] = useState(1);
+            const [subtotal, setSubtotal] = useState(0);
+            const [tax, setTax] = useState(0);
+            const [serviceFee, setServiceFee] = useState(150000);
+            const [grandTotal, setGrandTotal] = useState(0);
+
+            // Promo/Coupon states
+            const [promoInput, setPromoInput] = useState("");
+            const [appliedPromo, setAppliedPromo] = useState(null);
+            const [promoMessage, setPromoMessage] = useState("");
+            const [promoError, setPromoError] = useState(false);
+            const [discountAmount, setDiscountAmount] = useState(0);
+
+            // Auto-detect room parameter and promo parameter from URL on load
+            useEffect(() => {
+                const params = new URLSearchParams(window.location.search);
+                const roomParam = params.get('room');
+                if (roomParam) {
+                    setSelectedRoomId(Number(roomParam));
+                }
+                const promoParam = params.get('promo');
+                if (promoParam) {
+                    const codeUpper = promoParam.toUpperCase();
+                    setPromoInput(codeUpper);
+                    const storedPromos = JSON.parse(localStorage.getItem("promos_db") || "[]");
+                    const allPromos = storedPromos.length > 0 ? storedPromos : [
+                        { id: 1, code: "VISTASUMMER", title: "Promo Liburan Musim Panas", discount_percentage: 15, valid_until: "2026-08-31" },
+                        { id: 2, code: "HONEYMOON", title: "Paket Romantis Bulan Madu", discount_percentage: 20, valid_until: "2026-12-31" }
+                    ];
+                    const found = allPromos.find(p => p.code === codeUpper);
+                    if (found) {
+                        setAppliedPromo(found);
+                        setPromoMessage(`Kupon ${found.code} (${found.discount_percentage}%) berhasil diterapkan dari link!`);
+                        setPromoError(false);
+                    } else {
+                        setPromoMessage("Kupon dari link tidak valid atau tidak aktif.");
+                        setPromoError(true);
+                    }
+                }
+            }, []);
+
+            // Handler to manually apply promo
+            const handleApplyPromo = () => {
+                if (!promoInput.trim()) {
+                    setPromoMessage("Mohon masukkan kode kupon.");
+                    setPromoError(true);
+                    setAppliedPromo(null);
+                    return;
+                }
+                const codeUpper = promoInput.trim().toUpperCase();
+                const storedPromos = JSON.parse(localStorage.getItem("promos_db") || "[]");
+                const allPromos = storedPromos.length > 0 ? storedPromos : [
+                    { id: 1, code: "VISTASUMMER", title: "Promo Liburan Musim Panas", discount_percentage: 15, valid_until: "2026-08-31" },
+                    { id: 2, code: "HONEYMOON", title: "Paket Romantis Bulan Madu", discount_percentage: 20, valid_until: "2026-12-31" }
+                ];
+                const found = allPromos.find(p => p.code === codeUpper);
+                if (found) {
+                    setAppliedPromo(found);
+                    setPromoMessage(`Kupon ${found.code} (${found.discount_percentage}%) berhasil digunakan!`);
+                    setPromoError(false);
+                } else {
+                    setAppliedPromo(null);
+                    setPromoMessage("Kode kupon tidak valid atau sudah kedaluwarsa.");
+                    setPromoError(true);
+                }
+            };
+
+            // React useEffect hook for pricing calculations whenever checkIn, checkOut, room or appliedPromo changes
+            useEffect(() => {
+                const room = rooms.find(r => r.id === selectedRoomId);
+                if (!room) return;
+
+                let calculatedNights = 1;
+                if (checkIn && checkOut) {
+                    const start = new Date(checkIn);
+                    const end = new Date(checkOut);
+                    const diffTime = Math.abs(end - start);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    if (diffDays > 0) {
+                        calculatedNights = diffDays;
+                    }
+                }
+                setNights(calculatedNights);
+
+                const calcSubtotal = room.price * calculatedNights;
+                const calcTax = Math.round(calcSubtotal * 0.1); // 10% VAT
+                
+                let calcDiscount = 0;
+                if (appliedPromo) {
+                    calcDiscount = Math.round(calcSubtotal * (appliedPromo.discount_percentage / 100));
+                }
+                setDiscountAmount(calcDiscount);
+
+                const calcGrand = calcSubtotal + calcTax + serviceFee - calcDiscount;
+
+                setSubtotal(calcSubtotal);
+                setTax(calcTax);
+                setGrandTotal(calcGrand);
+
+            }, [checkIn, checkOut, selectedRoomId, rooms, appliedPromo]);
+
+            const selectedRoom = rooms.find(r => r.id === selectedRoomId) || rooms[0];
+
+            const formatRupiah = (val) => {
+                return 'Rp ' + new Intl.NumberFormat('id-ID').format(val);
+            };
+
+            const handleNextStep = (e) => {
+                e.preventDefault();
+                if (step < 3) {
+                    setStep(step + 1);
+                }
+            };
+
+            const handlePrevStep = () => {
+                if (step > 1) {
+                    setStep(step - 1);
+                }
+            };
+
+            const handlePaymentFile = (file) => {
+                if (!file) return;
+                if (!file.type.startsWith('image/')) {
+                    alert('Mohon unggah file gambar (JPG, PNG, atau WEBP).');
+                    return;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Ukuran file maksimal 5 MB.');
+                    return;
+                }
+                setPaymentProofName(file.name);
+                const reader = new FileReader();
+                reader.onloadend = () => setPaymentPreview(reader.result);
+                reader.readAsDataURL(file);
+            };
+
+            const handleCheckoutFinal = (e) => {
+                e.preventDefault();
+                if (!paymentPreview) {
+                    alert('Mohon unggah bukti pembayaran terlebih dahulu.');
+                    return;
+                }
+                // Store simulated booking in localStorage
+                const bookings = JSON.parse(localStorage.getItem("bookings_db") || "[]");
+                const newBooking = {
+                    id: bookings.length + 1,
+                    guest_name: guestName,
+                    guest_email: guestEmail,
+                    check_in: checkIn,
+                    check_out: checkOut,
+                    room_name: selectedRoom.name,
+                    total_price: grandTotal,
+                    discount_amount: discountAmount,
+                    promo_code: appliedPromo ? appliedPromo.code : null,
+                    bank_name: bankName,
+                    payment_proof: paymentProofName,
+                    status: "Pending",
+                    created_at: new Date().toISOString()
+                };
+                bookings.push(newBooking);
+                localStorage.setItem("bookings_db", JSON.stringify(bookings));
+
+                setStep(3); // Go to success modal
+            };
+
+            return (
+                <div className="flex flex-col min-h-screen">
+                    <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 md:px-12 py-4 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm">
+                        <a className="text-2xl font-bold tracking-wider text-primary flex items-center gap-2 font-serif" href="index.html">
+                            <span className="text-secondary">RIT</span><span> Hotel</span>
+                        </a>
+                        <a href="daftar_kamar.html" className="text-slate-600 hover:text-secondary text-sm font-semibold transition-colors flex items-center gap-1">
+                            <span className="material-symbols-outlined text-sm">arrow_back</span> Kembali Ke Katalog
+                        </a>
+                    </header>
+
+                    <main className="flex-grow pt-28 max-w-5xl mx-auto px-6 w-full pb-24">
+                        {/* Stepper Wizard Indicator */}
+                        <div className="flex justify-between items-center max-w-md mx-auto mb-12 relative">
+                            <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[2px] bg-slate-200 z-0"></div>
+                            
+                            {[
+                                { number: 1, label: "Informasi Tamu" },
+                                { number: 2, label: "Detail Transaksi" },
+                                { number: 3, label: "Pesanan Selesai" }
+                            ].map((s) => (
+                                <div key={s.number} className="relative z-10 flex flex-col items-center gap-2">
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${step >= s.number ? 'bg-primary text-[#D4AF37] border-2 border-secondary' : 'bg-slate-200 text-slate-500'}`}>
+                                        {s.number}
+                                    </div>
+                                    <span className={`text-[9px] font-bold uppercase tracking-widest ${step >= s.number ? 'text-primary' : 'text-slate-400'}`}>{s.label}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Split Stepper Content & Invoice Summary */}
+                        {step < 3 ? (
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                                {/* Left Form components using state and React Conditional Rendering */}
+                                <div className="lg:col-span-2 bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                                    {step === 1 && (
+                                        <form onSubmit={handleNextStep} className="space-y-6 text-xs">
+                                            <div className="space-y-2 border-b pb-4">
+                                                <h3 className="font-bold text-sm uppercase tracking-wider text-primary">Langkah 1: Informasi Kontak</h3>
+                                                <p className="text-[10px] text-slate-400 font-light">Mohon lengkapi data tamu di bawah ini untuk penerbitan tagihan voucher.</p>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="flex flex-col gap-1.5">
+                                                    <label className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Nama Lengkap Tamu</label>
+                                                    <input type="text" value={guestName} onChange={(e) => setGuestName(e.target.value)} className="bg-slate-50 border-slate-100 rounded-xl px-4 py-3 outline-none focus:ring-1 focus:ring-secondary focus:border-secondary font-semibold" placeholder="Contoh: John Doe" required />
+                                                </div>
+                                                <div className="flex flex-col gap-1.5">
+                                                    <label className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Email Tamu</label>
+                                                    <input type="email" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} className="bg-slate-50 border-slate-100 rounded-xl px-4 py-3 outline-none focus:ring-1 focus:ring-secondary focus:border-secondary font-semibold" placeholder="johndoe@example.com" required />
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="flex flex-col gap-1.5">
+                                                    <label className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Pilih Kamar / Suite</label>
+                                                    <select value={selectedRoomId} onChange={(e) => setSelectedRoomId(Number(e.target.value))} className="bg-slate-50 border-slate-100 rounded-xl px-3.5 py-3 outline-none focus:ring-1 focus:ring-secondary font-semibold">
+                                                        {rooms.map(r => (
+                                                            <option key={r.id} value={r.id}>{r.name} - ({formatRupiah(r.price)} / malam)</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div className="flex flex-col gap-1.5">
+                                                    <label className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Metode Pembayaran</label>
+                                                    <select value={bankName} onChange={(e) => setBankName(e.target.value)} className="bg-slate-50 border-slate-100 rounded-xl px-3.5 py-3 outline-none focus:ring-1 focus:ring-secondary font-semibold">
+                                                        <option value="BCA">Transfer Bank BCA - (8440938271)</option>
+                                                        <option value="MANDIRI">Transfer Bank Mandiri - (137001928374)</option>
+                                                        <option value="BNI">Transfer Bank BNI - (0829381729)</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="flex flex-col gap-1.5">
+                                                    <label className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Tanggal Check-In</label>
+                                                    <input type="date" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} className="bg-slate-50 border-slate-100 rounded-xl px-4 py-3 outline-none focus:ring-1 focus:ring-secondary font-semibold" required />
+                                                </div>
+                                                <div className="flex flex-col gap-1.5">
+                                                    <label className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Tanggal Check-Out</label>
+                                                    <input type="date" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className="bg-slate-50 border-slate-100 rounded-xl px-4 py-3 outline-none focus:ring-1 focus:ring-secondary font-semibold" required />
+                                                </div>
+                                            </div>
+
+                                            <button type="submit" className="w-full bg-primary hover:bg-secondary text-white hover:text-primary transition-all py-3.5 rounded-2xl font-bold uppercase tracking-wider shadow-md">
+                                                Lanjutkan Ke Pembayaran
+                                            </button>
+                                        </form>
+                                    )}
+
+                                    {step === 2 && (
+                                        <form onSubmit={handleCheckoutFinal} className="space-y-6 text-xs">
+                                            <div className="space-y-2 border-b pb-4">
+                                                <h3 className="font-bold text-sm uppercase tracking-wider text-primary">Langkah 2: Konfirmasi Pembayaran</h3>
+                                                <p className="text-[10px] text-slate-400 font-light">Silakan lakukan transfer sesuai total biaya ke rekening bank RIT Hotel yang telah dipilih.</p>
+                                            </div>
+
+                                            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-3">
+                                                <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Rekening Tujuan</p>
+                                                <p className="font-bold text-lg text-primary">{bankName === 'BCA' ? 'Bank BCA - 8440938271' : bankName === 'MANDIRI' ? 'Bank Mandiri - 137001928374' : 'Bank BNI - 0829381729'}</p>
+                                                <p className="text-[10px] text-slate-500 font-light">Atas Nama: <span className="font-bold">PT RIT Hotel Heritage Yogyakarta</span></p>
+                                                <p className="text-xs text-emerald-600 font-bold">Total Transfer: {formatRupiah(grandTotal)}</p>
+                                            </div>
+
+                                            <div className="flex flex-col gap-2">
+                                                <label className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Unggah Bukti Pembayaran</label>
+                                                <div
+                                                    className={`upload-zone rounded-2xl p-6 text-center cursor-pointer ${uploadDrag ? 'dragover border-secondary bg-amber-50' : ''}`}
+                                                    onDragOver={(e) => { e.preventDefault(); setUploadDrag(true); }}
+                                                    onDragLeave={() => setUploadDrag(false)}
+                                                    onDrop={(e) => { e.preventDefault(); setUploadDrag(false); handlePaymentFile(e.dataTransfer.files[0]); }}
+                                                    onClick={() => document.getElementById('payment-file-input').click()}
+                                                >
+                                                    <input id="payment-file-input" type="file" accept="image/*" className="hidden" onChange={(e) => handlePaymentFile(e.target.files[0])} />
+                                                    {!paymentPreview ? (
+                                                        <div className="space-y-2">
+                                                            <span className="material-symbols-outlined text-4xl text-secondary">cloud_upload</span>
+                                                            <p className="text-xs font-semibold text-primary">Klik atau seret file bukti transfer ke sini</p>
+                                                            <p className="text-[10px] text-slate-400">Format: JPG, PNG, WEBP — Maks. 5 MB (simulasi frontend)</p>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="space-y-3">
+                                                            <img src={paymentPreview} alt="Pratinjau bukti" className="max-h-48 mx-auto rounded-xl border border-slate-200 shadow-sm object-contain" />
+                                                            <p className="text-xs font-semibold text-emerald-600 flex items-center justify-center gap-1">
+                                                                <span className="material-symbols-outlined text-sm">check_circle</span>
+                                                                {paymentProofName}
+                                                            </p>
+                                                            <button type="button" onClick={(e) => { e.stopPropagation(); setPaymentPreview(null); setPaymentProofName(''); }} className="text-[10px] text-red-500 font-bold uppercase hover:underline">
+                                                                Ganti File
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex gap-4">
+                                                <button type="button" onClick={handlePrevStep} className="flex-grow bg-slate-50 hover:bg-slate-100 text-primary py-3.5 rounded-2xl font-bold uppercase border border-slate-100 transition-all">
+                                                    Kembali
+                                                </button>
+                                                <button type="submit" className="flex-grow bg-primary hover:bg-secondary text-white hover:text-primary py-3.5 rounded-2xl font-bold uppercase transition-all shadow-md">
+                                                    Konfirmasi Pembayaran
+                                                </button>
+                                            </div>
+                                        </form>
+                                    )}
+                                </div>
+
+                                {/* Right Side: Live pricing panel calculated dynamically using useEffect */}
+                                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+                                    <h4 className="font-bold text-xs uppercase tracking-widest text-primary border-b pb-3">Ringkasan Tagihan</h4>
+                                    
+                                    <div className="space-y-3 text-xs">
+                                        <div className="flex justify-between font-bold text-slate-900">
+                                            <span>Tipe Kamar</span>
+                                            <span className="text-secondary">{selectedRoom.name}</span>
+                                        </div>
+                                        <div className="flex justify-between text-slate-500 font-light">
+                                            <span>Tarif per malam</span>
+                                            <span>{formatRupiah(selectedRoom.price)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-slate-500 font-light border-b pb-3">
+                                            <span>Masa Tinggal</span>
+                                            <span className="font-bold text-slate-900">{nights} Malam</span>
+                                        </div>
+
+                                        <div className="flex justify-between text-slate-500 font-light">
+                                            <span>Subtotal Kamar</span>
+                                            <span>{formatRupiah(subtotal)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-slate-500 font-light">
+                                            <span>PPN (10%)</span>
+                                            <span>{formatRupiah(tax)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-slate-500 font-light border-b pb-3">
+                                            <span>Retribusi Pariwisata</span>
+                                            <span>{formatRupiah(serviceFee)}</span>
+                                        </div>
+
+                                        {appliedPromo && (
+                                            <div className="flex justify-between text-emerald-600 font-bold">
+                                                <span>Potongan ({appliedPromo.code} - {appliedPromo.discount_percentage}%)</span>
+                                                <span>-{formatRupiah(discountAmount)}</span>
+                                            </div>
+                                        )}
+
+                                        <div className="flex justify-between text-slate-900 font-bold text-sm pt-2 border-t border-slate-100">
+                                            <span>Total Biaya</span>
+                                            <span className="text-secondary">{formatRupiah(grandTotal)}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Voucher / Coupon Input */}
+                                    <div className="border-t border-slate-100 pt-4 space-y-2">
+                                        <label className="text-[10px] text-slate-500 uppercase tracking-widest font-bold block">Kode Voucher / Kupon</label>
+                                        <div className="flex gap-2">
+                                            <input 
+                                                type="text" 
+                                                value={promoInput} 
+                                                onChange={(e) => setPromoInput(e.target.value.toUpperCase())} 
+                                                className="bg-slate-50 border-slate-200 text-slate-800 rounded-xl px-3 py-2 text-xs w-full focus:outline-none focus:ring-1 focus:ring-secondary uppercase font-mono font-bold" 
+                                                placeholder="Contoh: VISTASUMMER"
+                                            />
+                                            <button 
+                                                type="button" 
+                                                onClick={handleApplyPromo} 
+                                                className="bg-primary hover:bg-secondary text-white hover:text-primary px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 whitespace-nowrap"
+                                            >
+                                                Gunakan
+                                            </button>
+                                        </div>
+                                        {promoMessage && (
+                                            <p className={`text-[10px] font-semibold ${promoError ? 'text-red-500' : 'text-emerald-600'}`}>
+                                                {promoMessage}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            /* Conditional Rendering: Step 3 (Reservation Success) */
+                            <div className="max-w-md mx-auto bg-white p-8 rounded-3xl border border-slate-100 shadow-xl text-center space-y-6">
+                                <span className="material-symbols-outlined text-6xl text-emerald-500">check_circle</span>
+                                <div className="space-y-2">
+                                    <h3 className="font-serif text-2xl font-bold text-primary">Reservasi Sukses Dikirim!</h3>
+                                    <p className="text-xs text-slate-400 font-light leading-relaxed">
+                                        Selamat, booking Anda untuk kamar <span className="font-bold text-primary">{selectedRoom.name}</span> berhasil terdaftar secara lokal. Admin akan segera memverifikasi bukti transfer Anda.
+                                    </p>
+                                </div>
+
+                                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-left text-xs space-y-2">
+                                    <p className="flex justify-between text-[10px] text-slate-400 font-bold">
+                                        <span>Nama Tamu</span>
+                                        <span className="text-primary font-semibold">{guestName}</span>
+                                    </p>
+                                    <p className="flex justify-between text-[10px] text-slate-400 font-bold">
+                                        <span>Check In / Out</span>
+                                        <span className="text-primary font-semibold">{checkIn} - {checkOut}</span>
+                                    </p>
+                                    {appliedPromo && (
+                                        <p className="flex justify-between text-[10px] text-emerald-600 font-bold">
+                                            <span>Potongan Kupon ({appliedPromo.code})</span>
+                                            <span>-{formatRupiah(discountAmount)}</span>
+                                        </p>
+                                    )}
+                                    <p className="flex justify-between text-[10px] text-slate-400 font-bold">
+                                        <span>Total Tagihan</span>
+                                        <span className="text-secondary font-bold">{formatRupiah(grandTotal)}</span>
+                                    </p>
+                                </div>
+
+                                <div className="flex gap-4">
+                                    <a href="index.html" className="flex-grow bg-slate-50 hover:bg-slate-100 text-primary py-3.5 rounded-2xl font-bold text-xs uppercase tracking-wider transition-colors border border-slate-100">
+                                        Kembali Ke Home
+                                    </a>
+                                    <a href="daftar_kamar.html" className="flex-grow bg-primary hover:bg-secondary text-white hover:text-primary py-3.5 rounded-2xl font-bold text-xs uppercase tracking-wider transition-colors shadow-md">
+                                        Pesan Kamar Lain
+                                    </a>
+                                </div>
+                            </div>
+                        )}
+                    </main>
+
+                    <footer className="bg-primary text-white border-t border-slate-900 mt-24">
+                        <div className="border-t border-slate-900 py-6 text-center text-[10px] text-slate-500 font-light">
+                            &copy; 2026 RIT Hotel Hotel Yogyakarta. Seluruh Hak Cipta Dilindungi. Tugas UTS Pemrograman Web - Kelompok 4.
+                        </div>
+                    </footer>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

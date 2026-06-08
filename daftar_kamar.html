@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>RIT Hotel Hotel Yogyakarta | Pilihan Kamar & Suite</title>
+    <!-- Tailwind CSS with Forms plugin -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <!-- Google Fonts Poppins & Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link href="css/polish.css" rel="stylesheet">
+    <!-- React & ReactDOM CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <!-- Babel CDN for JSX processing in browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .gold-gradient {
+            background: linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%);
+        }
+        .navy-gradient {
+            background: linear-gradient(135deg, #000613 0%, #0b1528 100%);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#000613",
+                        secondary: "#D4AF37",
+                        "secondary-dark": "#AA7C11",
+                        surface: "#F9FAFC",
+                        "on-surface-variant": "#64748B"
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-slate-800">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Dummy database catalog rooms stored in localStorage
+        const defaultRooms = [
+            { id: 1, name: "Superior King Garden", type: "Superior", detail: "Pemandangan Taman • King Bed • Luas 32m²", price: 2150000, status: "Tersedia", image: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&q=80&w=800", amenities: "wifi,local_bar,tv" },
+            { id: 2, name: "Deluxe Malioboro View", type: "Deluxe", detail: "Pemandangan Malioboro • King Bed • Luas 45m²", price: 3450000, status: "Tersedia", image: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&q=80&w=800", amenities: "wifi,location_city,coffee_maker" },
+            { id: 3, name: "Presidential Sky Suite", type: "Suite", detail: "Pemandangan Kota • King Bed • Luas 90m²", price: 8900000, status: "Penuh", image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=800", amenities: "wifi,pool,king_bed,butler" },
+            { id: 4, name: "Executive Superior Room", type: "Superior", detail: "Lantai Eksekutif • King Bed • Luas 38m²", price: 2800000, status: "Tersedia", image: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&q=80&w=800", amenities: "wifi,work,fitness_center" },
+            { id: 5, name: "Deluxe Garden Terrace", type: "Deluxe", detail: "Teras Pribadi • King Bed • Luas 50m²", price: 4200000, status: "Penuh", image: "https://images.unsplash.com/photo-1595576508898-0ad5c879a061?auto=format&fit=crop&q=80&w=800", amenities: "wifi,deck,ac_unit" },
+            { id: 6, name: "RIT Hotel Royal Suite", type: "Suite", detail: "Luas 120m² • Pemandangan Panorama", price: 12500000, status: "Tersedia", image: "https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&q=80&w=800", amenities: "wifi,wine_bar,spa,hot_tub" }
+        ];
+
+        function App() {
+            const [rooms, setRooms] = useState([]);
+            const [selectedType, setSelectedType] = useState("all");
+            const [searchQuery, setSearchQuery] = useState("");
+            const [maxPrice, setMaxPrice] = useState(15000000);
+            const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+            const [isLoggedIn, setIsLoggedIn] = useState(false);
+            const [userFullName, setUserFullName] = useState("");
+            const [userRole, setUserRole] = useState("");
+            const [selectedRoom, setSelectedRoom] = useState(null); // Detail modal
+
+            useEffect(() => {
+                const storedRooms = localStorage.getItem("kamar_db");
+                const version = localStorage.getItem("kamar_version");
+                if (!storedRooms || version !== "2") {
+                    localStorage.setItem("kamar_db", JSON.stringify(defaultRooms));
+                    localStorage.setItem("kamar_version", "2");
+                    setRooms(defaultRooms);
+                } else {
+                    setRooms(JSON.parse(storedRooms));
+                }
+
+                const logged = localStorage.getItem("isLoggedIn");
+                if (logged === "true") {
+                    setIsLoggedIn(true);
+                    setUserFullName(localStorage.getItem("fullname") || "Tamu VIP");
+                    setUserRole(localStorage.getItem("role") || "user");
+                }
+            }, []);
+
+            // Filter logic
+            const filteredRooms = rooms.filter(room => {
+                const matchesType = selectedType === "all" || room.type.toLowerCase() === selectedType.toLowerCase();
+                const matchesSearch = room.name.toLowerCase().includes(searchQuery.toLowerCase()) || room.detail.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchesPrice = room.price <= maxPrice;
+                return matchesType && matchesSearch && matchesPrice;
+            });
+
+            const formatRupiah = (val) => {
+                return 'Rp ' + new Intl.NumberFormat('id-ID').format(val);
+            };
+
+            const handleLogout = () => {
+                localStorage.removeItem("isLoggedIn");
+                localStorage.removeItem("user_id");
+                localStorage.removeItem("role");
+                localStorage.removeItem("fullname");
+                setIsLoggedIn(false);
+                window.location.reload();
+            };
+
+            return (
+                <div className="flex flex-col min-h-screen">
+                    {/* Header Component */}
+                    <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 md:px-12 py-4 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm">
+                        <div className="flex items-center gap-4">
+                            <button className="lg:hidden text-primary p-1 flex items-center" onClick={() => setMobileMenuOpen(true)}>
+                                <span className="material-symbols-outlined text-2xl">menu</span>
+                            </button>
+                            <a className="text-2xl font-bold tracking-wider text-primary flex items-center gap-2 font-serif" href="index.html">
+                                <span className="text-secondary">RIT</span><span> Hotel</span>
+                            </a>
+                        </div>
+                        
+                        {/* Desktop Links */}
+                        <nav className="hidden lg:flex items-center gap-8">
+                            <a className="font-medium text-sm text-on-surface-variant hover:text-secondary py-1 transition-colors" href="index.html">Beranda</a>
+                            <a className="font-semibold text-sm text-secondary border-b-2 border-secondary py-1" href="daftar_kamar.html">Kamar & Suite</a>
+                            <a className="font-medium text-sm text-on-surface-variant hover:text-secondary py-1 transition-colors" href="promo.html">Promo</a>
+                            <a className="font-medium text-sm text-on-surface-variant hover:text-secondary py-1 transition-colors" href="news.html">Kabar</a>
+                            <a className="font-medium text-sm text-on-surface-variant hover:text-secondary py-1 transition-colors" href="gallery.html">Galeri</a>
+                            <a className="font-medium text-sm text-on-surface-variant hover:text-secondary py-1 transition-colors" href="kontak.html">Hubungi Kami</a>
+                            <a className="font-medium text-sm text-on-surface-variant hover:text-secondary py-1 transition-colors font-bold px-3 py-1 bg-amber-50 rounded-lg border border-amber-200" href="api_data.html">API Page (Axios)</a>
+                        </nav>
+
+                        <div className="flex items-center gap-4">
+                            {isLoggedIn ? (
+                                <div className="flex items-center gap-3">
+                                    <span className="hidden md:inline text-xs font-semibold text-primary">Hai, {userFullName}</span>
+                                    {userRole === 'admin' ? (
+                                        <a href="admin_dashboard.html" className="bg-secondary text-white px-3 py-1.5 rounded-full text-xs font-bold">Admin</a>
+                                    ) : (
+                                        <a href="user_dashboard.html" className="hidden md:inline text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200">Dashboard</a>
+                                    )}
+                                    <button onClick={handleLogout} className="text-red-500 hover:text-red-700 font-bold text-xs uppercase tracking-wider">Keluar</button>
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-4">
+                                    <a href="login.html" className="text-slate-600 hover:text-secondary text-sm font-semibold">Login</a>
+                                    <a href="booking.html" className="hidden md:block bg-primary text-white hover:bg-secondary hover:text-primary transition-all duration-300 px-6 py-2.5 rounded-full text-sm font-bold shadow-md">Pesan Sekarang</a>
+                                </div>
+                            )}
+                        </div>
+                    </header>
+
+                    {/* Mobile Drawer */}
+                    {mobileMenuOpen && (
+                        <div className="fixed inset-0 z-[60] flex">
+                            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}></div>
+                            <aside className="relative h-screen w-72 bg-white flex flex-col py-6 px-6 shadow-2xl z-10">
+                                <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
+                                    <span className="text-2xl font-bold font-serif text-primary flex items-center gap-2">
+                                        <span className="text-secondary">G</span><span>RIT Hotel</span>
+                                    </span>
+                                    <button className="p-1 hover:bg-slate-100 rounded-full flex items-center" onClick={() => setMobileMenuOpen(false)}>
+                                        <span className="material-symbols-outlined text-2xl">close</span>
+                                    </button>
+                                </div>
+                                <div className="flex flex-col gap-2 overflow-y-auto flex-grow text-sm">
+                                    <a className="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 font-medium" href="index.html">
+                                        <span className="material-symbols-outlined">home</span><span>Beranda</span>
+                                    </a>
+                                    <a className="flex items-center gap-4 px-4 py-3 rounded-xl bg-secondary/10 text-secondary font-bold" href="daftar_kamar.html">
+                                        <span className="material-symbols-outlined">king_bed</span><span>Kamar & Suite</span>
+                                    </a>
+                                    <a className="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 font-medium" href="promo.html">
+                                        <span className="material-symbols-outlined">sell</span><span>Promo Hotel</span>
+                                    </a>
+                                    <a className="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 font-medium" href="news.html">
+                                        <span className="material-symbols-outlined">article</span><span>Berita & Event</span>
+                                    </a>
+                                    <a className="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 font-medium" href="gallery.html">
+                                        <span className="material-symbols-outlined">gallery_thumbnail</span><span>Galeri Foto</span>
+                                    </a>
+                                    <a className="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 font-medium" href="kontak.html">
+                                        <span className="material-symbols-outlined">contact_support</span><span>Kontak & FAQ</span>
+                                    </a>
+                                    <a className="flex items-center gap-4 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 font-bold text-amber-600" href="api_data.html">
+                                        <span className="material-symbols-outlined text-amber-600">api</span><span>Axios API Page</span>
+                                    </a>
+                                </div>
+                            </aside>
+                        </div>
+                    )}
+
+                    {/* Main content */}
+                    <main className="flex-grow pt-28 max-w-7xl mx-auto px-6 md:px-12 w-full pb-24">
+                        {/* Title area */}
+                        <div className="space-y-4 mb-12">
+                            <span className="text-secondary font-bold text-xs uppercase tracking-widest block">Katalog Kamar & Suite</span>
+                            <h2 className="font-serif text-3xl md:text-5xl font-bold text-primary">Tipe Kamar Mewah Tersedia</h2>
+                            <p className="text-xs md:text-sm text-slate-500 font-light max-w-xl">
+                                Gunakan fitur filter pencarian di bawah untuk mencari kamar impian sesuai kebutuhan dan anggaran liburan Anda di Yogyakarta.
+                            </p>
+                        </div>
+
+                        {/* Search and Filters panel */}
+                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                            {/* Filter panel Left */}
+                            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6 h-fit">
+                                <h3 className="font-bold text-sm uppercase tracking-wider text-primary border-b pb-4">Filter Pencarian</h3>
+                                
+                                {/* Search query */}
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Kata Kunci</label>
+                                    <div className="relative flex items-center">
+                                        <span className="material-symbols-outlined text-slate-400 absolute left-3 text-sm">search</span>
+                                        <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-slate-50 border-slate-100 rounded-2xl pl-10 pr-4 py-3 text-xs outline-none focus:ring-1 focus:ring-secondary focus:border-secondary placeholder-slate-400" placeholder="Contoh: Garden, Malioboro..." />
+                                    </div>
+                                </div>
+
+                                {/* Category types */}
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Tipe Kamar</label>
+                                    <div className="flex flex-col gap-2">
+                                        {['all', 'Superior', 'Deluxe', 'Suite'].map((type) => (
+                                            <button key={type} onClick={() => setSelectedType(type)} className={`text-left px-4 py-2.5 rounded-xl text-xs font-semibold capitalize transition-all ${selectedType === type ? 'bg-primary text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
+                                                {type === 'all' ? 'Semua Tipe' : type}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Price Filter slider */}
+                                <div className="space-y-2">
+                                    <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                                        <span>Batas Anggaran</span>
+                                        <span className="text-secondary">{formatRupiah(maxPrice)}</span>
+                                    </div>
+                                    <input type="range" min="2000000" max="15000000" step="500000" value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))} className="w-full accent-secondary" />
+                                    <div className="flex justify-between text-[9px] text-slate-400 font-bold">
+                                        <span>2 Jt</span>
+                                        <span>15 Jt</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Catalog Grid Right */}
+                            <div className="lg:col-span-3 space-y-6">
+                                <div className="flex justify-between items-center text-xs font-semibold text-slate-500">
+                                    <span>Menampilkan {filteredRooms.length} kamar ditemukan</span>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    {filteredRooms.length === 0 ? (
+                                        <div className="col-span-2 text-center py-20 text-slate-400 space-y-4">
+                                            <span className="material-symbols-outlined text-4xl text-slate-300">search_off</span>
+                                            <p className="text-xs font-light">Tidak ada tipe kamar yang cocok dengan kriteria filter Anda.</p>
+                                        </div>
+                                    ) : (
+                                        filteredRooms.map((room) => (
+                                            <div key={room.id} className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-md transition-all group flex flex-col justify-between">
+                                                <div className="relative h-60 overflow-hidden">
+                                                    <img src={room.image} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" alt={room.name} />
+                                                    <span className={`absolute top-4 left-4 text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border shadow-sm ${room.status === 'Tersedia' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                                                        {room.status}
+                                                    </span>
+                                                    <span className="absolute bottom-4 right-4 bg-primary/80 backdrop-blur-md text-[#D4AF37] px-3.5 py-1.5 rounded-full text-xs font-bold">{formatRupiah(room.price)} / malam</span>
+                                                </div>
+                                                <div className="p-6 space-y-4 flex-grow flex flex-col justify-between">
+                                                    <div className="space-y-2">
+                                                        <span className="text-secondary font-bold text-[9px] uppercase tracking-widest">{room.type} Suite</span>
+                                                        <h4 className="font-bold text-lg text-primary font-serif">{room.name}</h4>
+                                                        <p className="text-xs text-on-surface-variant font-light line-clamp-2 leading-relaxed">{room.detail}</p>
+                                                    </div>
+                                                    
+                                                    <div className="flex gap-2 text-slate-400 border-t border-slate-50 pt-4 text-[10px] items-center">
+                                                         {(room.amenities || "wifi").split(',').map((am, i) => (
+                                                             <span key={i} className="bg-slate-50 border border-slate-100 rounded px-2 py-1 flex items-center gap-1 capitalize font-medium">
+                                                                 <span className="material-symbols-outlined text-[10px] text-secondary">{am}</span>
+                                                                 {am.replace('_', ' ')}
+                                                             </span>
+                                                         ))}
+                                                     </div>
+
+                                                    <div className="pt-2 flex gap-4">
+                                                        <button onClick={() => setSelectedRoom(room)} className="flex-grow bg-slate-50 hover:bg-slate-100 text-primary py-3 rounded-2xl text-xs font-bold transition-all border border-slate-100">
+                                                            Detail Kamar
+                                                        </button>
+                                                        <a href={`booking.html?room=${room.id}`} className={`flex-grow text-center py-3 rounded-2xl text-xs font-bold transition-all ${room.status === 'Tersedia' ? 'bg-primary text-white hover:bg-secondary hover:text-primary shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed pointer-events-none'}`}>
+                                                            {room.status === 'Tersedia' ? 'Booking' : 'Penuh'}
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+
+                    {/* Room Detail Modal (Conditional Rendering) */}
+                    {selectedRoom && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-primary/70 backdrop-blur-sm">
+                            <div className="bg-white rounded-3xl p-8 max-w-xl w-full text-left shadow-2xl animate-fade-in relative max-h-[90vh] overflow-y-auto space-y-6">
+                                <button className="absolute top-4 right-4 p-1.5 hover:bg-slate-100 rounded-full flex items-center" onClick={() => setSelectedRoom(null)}>
+                                    <span className="material-symbols-outlined">close</span>
+                                </button>
+
+                                <div className="h-64 rounded-2xl overflow-hidden shadow-inner">
+                                    <img src={selectedRoom.image} className="w-full h-full object-cover" alt={selectedRoom.name} />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <span className="text-secondary font-bold text-xs uppercase tracking-widest">{selectedRoom.type} Luxury Suite</span>
+                                    <h3 className="font-bold text-2xl text-primary font-serif">{selectedRoom.name}</h3>
+                                    <p className="font-bold text-lg text-primary">{formatRupiah(selectedRoom.price)} <span className="text-xs text-slate-400 font-light">/ malam</span></p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h4 className="font-bold text-xs uppercase tracking-widest text-slate-400">Deskripsi & Fasilitas Kamar</h4>
+                                    <p className="text-xs text-slate-600 leading-relaxed font-light">{selectedRoom.detail}. Dilengkapi dengan perabotan mewah dari jati, pendingin ruangan berteknologi plasma cluster, meja kerja yang nyaman, mini bar premium, pembuat kopi espresso, dan kasur berkualitas tinggi bersertifikasi internasional.</p>
+                                </div>
+
+                                <div className="flex gap-2">
+                                    <a href={`booking.html?room=${selectedRoom.id}`} className={`w-full text-center py-4 rounded-2xl text-xs font-bold uppercase tracking-wider transition-colors ${selectedRoom.status === 'Tersedia' ? 'bg-primary text-white hover:bg-secondary hover:text-primary shadow-md' : 'bg-slate-200 text-slate-400 pointer-events-none'}`}>
+                                        {selectedRoom.status === 'Tersedia' ? 'Pesan Sekarang' : 'Kamar Penuh'}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Footer */}
+                    <footer className="bg-primary text-white border-t border-slate-900 mt-24">
+                        <div className="border-t border-slate-900 py-6 text-center text-[10px] text-slate-500 font-light">
+                            &copy; 2026 RIT Hotel Hotel Yogyakarta. Seluruh Hak Cipta Dilindungi. Tugas UTS Pemrograman Web - Kelompok 4.
+                        </div>
+                    </footer>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

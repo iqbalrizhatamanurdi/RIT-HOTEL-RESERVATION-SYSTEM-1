@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>RIT Hotel Yogyakarta | Galeri Visual Fasilitas</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link href="css/polish.css" rel="stylesheet">
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; min-height: 100vh; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#000613",
+                        secondary: "#D4AF37",
+                        surface: "#F9FAFC",
+                        "on-surface-variant": "#64748B"
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-slate-800">
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const defaultGallery = [
+            { id: 1, category: "eksterior", title: "Eksterior Malam Bertabur Emas", description: "Fasad hotel bergaya klasik Jawa dengan pencahayaan emas yang memukau, terlihat megah dari Jalan Malioboro.", image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=900" },
+            { id: 2, category: "eksterior", title: "Taman Heritage & Kolam Refleksi", description: "Area taman tropis dengan ornamen batik dan air mancur — suasana tenang setelah berkeliling Malioboro.", image: "https://i.pinimg.com/236x/02/3a/10/023a102486fb5bd3c3eedd3dc33c6d80.jpg" },
+            { id: 3, category: "lobi", title: "Lobi Grand dengan Ornamen Jogja", description: "Lobi dua lantai dengan chandelier kristal, ukiran kayu jati, dan resepsionis concierge 24 jam.", image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=900" },
+            { id: 4, category: "lobi", title: "Lounge Tamu VIP", description: "Ruang tunggu eksklusif dengan kopi lokal, teh melati, dan pemandangan halaman dalam hotel.", image: "https://i.pinimg.com/1200x/cb/6e/28/cb6e280ca8dbf52f5a6154607d310aee.jpg" },
+            { id: 5, category: "restoran", title: "Vista Delicacy — Cita Rasa Gudeg", description: "Restoran fine dining dengan menu gudeg khas Jogja, ayam bakar kalasan, dan hidangan internasional.", image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=900" },
+            { id: 6, category: "restoran", title: "Private Dining Keraton", description: "Ruang makan privat untuk acara keluarga atau meeting kecil dengan dekorasi budaya Mataram.", image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=900" },
+            { id: 7, category: "kolam_renang", title: "Infinity Pool dengan View Merapi", description: "Kolam renang infinity di rooftop dengan pemandangan Gunung Merapi saat fajar — favorit tamu Instagram.", image: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&q=80&w=900" },
+            { id: 8, category: "kolam_renang", title: "Pool Bar Senja Jogja", description: "Area santai tepi kolam dengan mocktail tropis dan live gamelan setiap akhir pekan.", image: "https://images.unsplash.com/photo-1575429198097-041f4c4e2b2f?auto=format&fit=crop&q=80&w=900" },
+            { id: 9, category: "meeting_room", title: "Ballroom Prambanan", description: "Ruang pertemuan kapasitas 300 orang dengan peralatan AV lengkap — ideal untuk MICE & pernikahan.", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=900" },
+            { id: 10, category: "meeting_room", title: "Meeting Room Malioboro", description: "Ruang rapat eksekutif 20–40 orang dengan WiFi kecepatan tinggi dan coffee break premium.", image: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&q=80&w=900" },
+            { id: 11, category: "kamar", title: "Superior King Garden", description: "Kamar 32 m² dengan tempat tidur king, pemandangan taman tropis, dan akses lounge.", image: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&q=80&w=900" },
+            { id: 12, category: "kamar", title: "Presidential Sky Suite", description: "Suite 90 m² di lantai atas dengan ruang tamu terpisah, jacuzzi, dan butler service 24 jam.", image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=900" },
+            { id: 13, category: "kamar", title: "Deluxe Malioboro View", description: "Kamar deluxe menghadap jalan Malioboro — rasakan denyut kota budaya dari balkon pribadi.", image: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&q=80&w=900" }
+        ];
+
+        const categoryLabels = {
+            all: "Semua Foto",
+            eksterior: "Eksterior Hotel",
+            lobi: "Lobi Hotel",
+            restoran: "Restoran",
+            kolam_renang: "Kolam Renang",
+            meeting_room: "Meeting Room",
+            kamar: "Kamar Hotel"
+        };
+
+        function App() {
+            const [activeTab, setActiveTab] = useState("all");
+            const [photos, setPhotos] = useState([]);
+            const [modalPhoto, setModalPhoto] = useState(null);
+            const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+            useEffect(() => {
+                const version = localStorage.getItem("galeri_version");
+                if (version !== "2") {
+                    localStorage.setItem("galeri_db", JSON.stringify(defaultGallery));
+                    localStorage.setItem("galeri_version", "2");
+                    setPhotos(defaultGallery);
+                } else {
+                    const stored = localStorage.getItem("galeri_db");
+                    setPhotos(stored ? JSON.parse(stored) : defaultGallery);
+                }
+            }, []);
+
+            const filteredPhotos = activeTab === "all" ? photos : photos.filter(p => p.category === activeTab);
+
+            return (
+                <div className="flex flex-col min-h-screen">
+                    <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 md:px-12 py-4 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm">
+                        <div className="flex items-center gap-4">
+                            <button className="lg:hidden text-primary" onClick={() => setMobileMenuOpen(true)}>
+                                <span className="material-symbols-outlined text-2xl">menu</span>
+                            </button>
+                            <a className="text-xl md:text-2xl font-bold tracking-wider text-primary flex items-center gap-2 font-serif" href="index.html">
+                                <span className="text-secondary">RIT</span><span> Hotel</span>
+                            </a>
+                        </div>
+                        <nav className="hidden lg:flex items-center gap-8 text-sm">
+                            <a className="font-medium text-on-surface-variant hover:text-secondary transition-colors" href="index.html">Beranda</a>
+                            <a className="font-medium text-on-surface-variant hover:text-secondary transition-colors" href="daftar_kamar.html">Kamar & Suite</a>
+                            <a className="font-medium text-on-surface-variant hover:text-secondary transition-colors" href="promo.html">Promo</a>
+                            <a className="font-medium text-on-surface-variant hover:text-secondary transition-colors" href="news.html">Kabar</a>
+                            <a className="font-semibold text-secondary border-b-2 border-secondary py-1" href="gallery.html">Galeri</a>
+                            <a className="font-medium text-on-surface-variant hover:text-secondary transition-colors" href="kontak.html">Hubungi Kami</a>
+                        </nav>
+                        <a href="booking.html" className="bg-primary text-white hover:bg-secondary hover:text-primary transition-all px-5 md:px-6 py-2.5 rounded-full text-sm font-bold shadow-md btn-premium">Pesan</a>
+                    </header>
+
+                    {mobileMenuOpen && (
+                        <div className="fixed inset-0 z-[60] flex">
+                            <div className="absolute inset-0 bg-black/40" onClick={() => setMobileMenuOpen(false)}></div>
+                            <aside className="relative w-72 bg-white h-screen p-6 shadow-2xl animate-slide-in">
+                                <button className="absolute top-4 right-4" onClick={() => setMobileMenuOpen(false)}><span className="material-symbols-outlined">close</span></button>
+                                <nav className="mt-12 flex flex-col gap-2 text-sm">
+                                    <a href="index.html" className="px-4 py-3 rounded-xl hover:bg-slate-50">Beranda</a>
+                                    <a href="daftar_kamar.html" className="px-4 py-3 rounded-xl hover:bg-slate-50">Kamar & Suite</a>
+                                    <a href="gallery.html" className="px-4 py-3 rounded-xl bg-secondary/10 text-secondary font-bold">Galeri</a>
+                                    <a href="booking.html" className="px-4 py-3 rounded-xl bg-primary text-white font-bold text-center mt-4">Pesan Sekarang</a>
+                                </nav>
+                            </aside>
+                        </div>
+                    )}
+
+                    <main className="flex-grow pt-24 md:pt-28 max-w-7xl mx-auto px-6 w-full pb-24 space-y-10">
+                        <div className="text-center space-y-3 animate-fade-in">
+                            <span className="text-secondary font-bold text-xs uppercase tracking-widest block">Galeri Portofolio Hotel</span>
+                            <h2 className="font-serif text-3xl md:text-5xl font-bold text-primary">Kemegahan RIT Hotel Yogyakarta</h2>
+                            <p className="text-sm text-slate-500 font-light max-w-2xl mx-auto leading-relaxed">
+                                Jelajahi fasilitas premium kami — dari lobi berornamen emas, restoran gudeg autentik, kolam renang view Merapi, hingga kamar suite menghadap Malioboro.
+                            </p>
+                        </div>
+
+                        <div className="flex flex-wrap justify-center gap-2">
+                            {Object.entries(categoryLabels).map(([key, label]) => (
+                                <button key={key} onClick={() => setActiveTab(key)} className={`px-3 md:px-4 py-2 rounded-xl text-[10px] md:text-xs font-semibold uppercase tracking-wider transition-all btn-premium ${activeTab === key ? 'bg-primary text-white shadow-md' : 'bg-white border border-slate-100 hover:bg-slate-50 text-slate-500'}`}>
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {filteredPhotos.length === 0 ? (
+                            <div className="text-center py-20 text-slate-400">
+                                <span className="material-symbols-outlined text-5xl mb-4">photo_library</span>
+                                <p className="text-sm">Belum ada foto di kategori ini.</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                                {filteredPhotos.map((photo) => (
+                                    <article key={photo.id} className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm card-premium group cursor-pointer" onClick={() => setModalPhoto(photo)}>
+                                        <div className="h-56 md:h-64 overflow-hidden relative">
+                                            <img src={photo.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={photo.title} loading="lazy" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-5">
+                                                <span className="text-white text-xs font-bold flex items-center gap-1">
+                                                    <span className="material-symbols-outlined text-sm">zoom_in</span> Lihat Detail
+                                                </span>
+                                            </div>
+                                            <span className="absolute top-3 left-3 bg-secondary/90 text-primary text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full">
+                                                {categoryLabels[photo.category] || photo.category}
+                                            </span>
+                                        </div>
+                                        <div className="p-5 space-y-2">
+                                            <h4 className="font-serif font-bold text-primary text-base leading-tight">{photo.title}</h4>
+                                            <p className="text-xs text-slate-500 font-light leading-relaxed line-clamp-2">{photo.description || "Fasilitas premium RIT Hotel Yogyakarta."}</p>
+                                        </div>
+                                    </article>
+                                ))}
+                            </div>
+                        )}
+                    </main>
+
+                    {modalPhoto && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-primary/80 backdrop-blur-sm" onClick={() => setModalPhoto(null)}>
+                            <div className="bg-white rounded-3xl max-w-3xl w-full overflow-hidden shadow-2xl animate-fade-in" onClick={(e) => e.stopPropagation()}>
+                                <div className="relative">
+                                    <img src={modalPhoto.image} alt={modalPhoto.title} className="w-full max-h-[60vh] object-cover" />
+                                    <button className="absolute top-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg hover:bg-slate-100" onClick={() => setModalPhoto(null)}>
+                                        <span className="material-symbols-outlined">close</span>
+                                    </button>
+                                </div>
+                                <div className="p-6 md:p-8 space-y-3">
+                                    <span className="text-secondary text-[10px] font-bold uppercase tracking-widest">{categoryLabels[modalPhoto.category]}</span>
+                                    <h3 className="font-serif text-2xl font-bold text-primary">{modalPhoto.title}</h3>
+                                    <p className="text-sm text-slate-600 font-light leading-relaxed">{modalPhoto.description}</p>
+                                    <a href="booking.html" className="inline-block mt-4 bg-primary hover:bg-secondary text-white hover:text-primary px-6 py-3 rounded-full text-xs font-bold uppercase tracking-wider btn-premium transition-all">
+                                        Pesan Pengalaman Ini
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <footer className="bg-primary text-white py-6 text-center text-[10px] text-slate-500">
+                        &copy; 2026 RIT Hotel Yogyakarta. Galeri Fasilitas Premium.
+                    </footer>
+                </div>
+            );
+        }
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
